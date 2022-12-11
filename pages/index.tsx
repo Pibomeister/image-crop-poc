@@ -11,25 +11,8 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import { Area } from "react-easy-crop";
 import getCroppedImg from "../lib/cropImage";
 import { UploadFileResponse } from "./api/upload";
+import { dataURItoBlob } from "../lib/blob";
 
-function dataURItoBlob(dataURI: string) {
-  // convert base64/URLEncoded data component to raw binary data held in a string
-  var byteString;
-  if (dataURI.split(",")[0].indexOf("base64") >= 0)
-    byteString = atob(dataURI.split(",")[1]);
-  else byteString = unescape(dataURI.split(",")[1]);
-
-  // separate out the mime component
-  var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
-
-  // write the bytes of the string to a typed array
-  var ia = new Uint8Array(byteString.length);
-  for (var i = 0; i < byteString.length; i++) {
-    ia[i] = byteString.charCodeAt(i);
-  }
-
-  return new Blob([ia], { type: mimeString });
-}
 export default function Home() {
   const [images, setImages] = useState<ImageListType>([]);
   const maxNumber = 69;
@@ -93,7 +76,7 @@ export default function Home() {
       formData.append("files", file);
     }
     setLoading(true);
-    fetch("http://localhost:3000/api/upload", {
+    fetch("/api/upload", {
       headers: {
         "Access-Control-Allow-Origin": "*",
       },
@@ -115,6 +98,30 @@ export default function Home() {
         console.log("err", err);
       });
   }, [images]);
+
+  const onDownloadZip = useCallback(() => {
+    const body = {
+      urls: results.map((r) => r.fileUrl),
+    } as any;
+    console.log("vady", body);
+    fetch("/api/download_zip", {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(body),
+    })
+      .then((response) => response.blob())
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "data.zip";
+        document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+        a.click();
+        a.remove(); //afterwards we remove the element again
+      });
+  }, []);
 
   const onRestart = () => {
     setResults([]);
@@ -210,9 +217,17 @@ export default function Home() {
           <>
             <Results results={results} />
             <br />
-            <button className={styles.niceBtn} onClick={() => onRestart()}>
-              Start Again
-            </button>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <button className={styles.niceBtn} onClick={() => onRestart()}>
+                ⬅️ Start Again
+              </button>
+              <button
+                className={styles.niceBtn}
+                onClick={() => onDownloadZip()}
+              >
+                📇 Download zip
+              </button>
+            </div>
           </>
         )}
       </main>
