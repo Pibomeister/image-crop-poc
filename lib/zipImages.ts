@@ -25,8 +25,13 @@ async function downloadImage(
   config?: RequestInit
 ): Promise<[Buffer, string]> {
   const arrayBuffer = await downloadFile(url, config);
-  const extension = url.split(".").slice(1).pop() || "";
-  return [Buffer.from(arrayBuffer), extension];
+  let extension: string;
+  if (url.includes(".")) {
+    extension = url.split(".").slice(1).pop() || "";
+  } else {
+    extension = "jpg";
+  }
+  return [Buffer.from(arrayBuffer), extension ?? "jpg"];
 }
 
 export async function downloadImages(
@@ -34,8 +39,11 @@ export async function downloadImages(
   config?: RequestInit
 ): Promise<Array<[Buffer, string]>> {
   const promises = urls.map((url) => downloadImage(url, config));
-  const buffers = await Promise.all(promises);
-  return buffers;
+  const buffers = await Promise.allSettled(promises);
+  const result = buffers
+    .filter((buffer) => buffer.status === "fulfilled")
+    .map((buffer) => (buffer as any).value);
+  return result;
 }
 
 export async function zipBuffers(
@@ -56,7 +64,9 @@ export async function downloadAndZipImages(
   urls: string[],
   config?: RequestInit
 ) {
+  console.log(urls);
   const imageBuffers = await downloadImages(urls, config);
+  console.log(imageBuffers);
   const zipBuffer = await zipBuffers(imageBuffers);
   return zipBuffer;
 }

@@ -100,10 +100,12 @@ export default function Home() {
   }, [images]);
 
   const onDownloadZip = useCallback(() => {
+    const urls = results.map((r) => r.fileUrl.toLowerCase());
+    console.log(urls);
     const body = {
-      urls: results.map((r) => r.fileUrl),
+      urls,
     } as any;
-    console.log("vady", body);
+    console.log("vady", JSON.stringify(body));
     fetch("/api/download_zip", {
       headers: {
         "Content-Type": "application/json",

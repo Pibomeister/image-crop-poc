@@ -22,7 +22,7 @@ export const config = {
 };
 
 const IMAGE_KIT_ENDPOINT = "https://ik.imagekit.io/mifotodeperfil/";
-const IMAGE_KIT_TRANSFORMATION = "tr:h-512,w-512,fo-face";
+const IMAGE_KIT_TRANSFORMATION = "tr:h-512,w-512,fo-face,f-jpg";
 
 const imagekit = new ImageKit({
   publicKey: "public_14WDrQ2tD3whpxapU42w9ejjXxA=",
@@ -78,9 +78,12 @@ export default async function handler(
           })
         );
       }
-      const uploads = await Promise.all(promises);
-      files.forEach((f) => fs.unlink(f.filepath, () => {}));
-      res.status(200).send({ uploads });
+      const uploads = await Promise.allSettled(promises);
+      const result = uploads
+        .filter((r) => r.status === "fulfilled")
+        .map((r) => (r as any).value);
+      result.forEach((f) => fs.unlink(f.filepath, () => {}));
+      res.status(200).send({ uploads: result });
     }
   );
 }

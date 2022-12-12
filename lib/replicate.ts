@@ -107,8 +107,8 @@ export const trainModel = async (config: ModelConfig, trainDataUrl: string) => {
       },
       body: JSON.stringify({
         input: {
-          instance_prompt: `a photo of ${individualName} person`,
-          class_prompt: `a photo of a person`,
+          instance_prompt: `${individualName} person`,
+          class_prompt: `person`,
           instance_data: trainDataUrl,
           max_train_steps: maxTrainSteps,
         },
@@ -135,7 +135,11 @@ export const checkModelStatus = async (modelId: string) => {
   }
 };
 
-export const prompt = async (prompt: string, modelVersion: string) => {
+export const prompt = async (
+  prompt: string,
+  negativePrompt: string,
+  modelVersion: string
+) => {
   try {
     const res = await fetch(`${PROMPT_BASE_URL}/predictions`, {
       headers: {
@@ -145,6 +149,9 @@ export const prompt = async (prompt: string, modelVersion: string) => {
       body: JSON.stringify({
         input: {
           prompt,
+          num_outputs: 4,
+          num_inference_steps: 50,
+          negative_prompt: negativePrompt,
         },
         version: modelVersion,
         webhook_completed: TRAIN_WEBHOOK_URL,

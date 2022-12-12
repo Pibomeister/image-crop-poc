@@ -48,6 +48,9 @@ export const uploadImages = async (
 ): Promise<ImageKitUploadResponse[]> => {
   const id = uniqueId ?? v4();
   const promises = images.map((image) => uploadImage(image, id));
-  const results = await Promise.all(promises);
-  return results;
+  const results = await Promise.allSettled(promises);
+  const settled = results
+    .filter((result) => result.status === "fulfilled")
+    .map((result) => (result as any).value);
+  return settled;
 };
