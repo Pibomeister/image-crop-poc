@@ -123,7 +123,7 @@ export default function Home() {
         a.click();
         a.remove(); //afterwards we remove the element again
       });
-  }, []);
+  }, [results]);
 
   const onRestart = () => {
     setResults([]);

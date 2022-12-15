@@ -82,7 +82,7 @@ export default async function handler(
       const result = uploads
         .filter((r) => r.status === "fulfilled")
         .map((r) => (r as any).value);
-      result.forEach((f) => fs.unlink(f.filepath, () => {}));
+      files.forEach((f) => fs.unlink(f.filepath, () => {}));
       res.status(200).send({ uploads: result });
     }
   );
