@@ -22,7 +22,7 @@ export const config = {
 };
 
 const IMAGE_KIT_ENDPOINT = "https://ik.imagekit.io/mifotodeperfil/";
-const IMAGE_KIT_TRANSFORMATION = "tr:h-512,w-512,fo-face,f-jpg";
+const IMAGE_KIT_TRANSFORMATION = "tr:h-512,w-512,fo-face,f-png";
 
 const imagekit = new ImageKit({
   publicKey: "public_14WDrQ2tD3whpxapU42w9ejjXxA=",

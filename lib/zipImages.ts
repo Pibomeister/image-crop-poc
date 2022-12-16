@@ -1,5 +1,6 @@
 import { v4 } from "uuid";
 import AdmZip from "adm-zip";
+import { fileTypeFromBuffer } from "file-type";
 
 import { processStatus } from "./http";
 
@@ -20,18 +21,22 @@ const padNumber = (num: number): string =>
     useGrouping: false,
   });
 
+const getFallBackExtension = (url: string): string => {
+  const extension = url.split(".").pop();
+  if (extension && extension.length < 5) {
+    return extension;
+  }
+  return "png";
+};
+
 async function downloadImage(
   url: string,
   config?: RequestInit
 ): Promise<[Buffer, string]> {
   const arrayBuffer = await downloadFile(url, config);
-  let extension: string;
-  if (url.includes(".")) {
-    extension = url.split(".").slice(1).pop() || "";
-  } else {
-    extension = "jpg";
-  }
-  return [Buffer.from(arrayBuffer), extension ?? "jpg"];
+  const fileTypeResult = await fileTypeFromBuffer(arrayBuffer);
+  const extension = fileTypeResult?.ext ?? getFallBackExtension(url);
+  return [Buffer.from(arrayBuffer), extension];
 }
 
 export async function downloadImages(
@@ -64,7 +69,6 @@ export async function downloadAndZipImages(
   urls: string[],
   config?: RequestInit
 ) {
-  console.log(urls);
   const imageBuffers = await downloadImages(urls, config);
   console.log(imageBuffers);
   const zipBuffer = await zipBuffers(imageBuffers);
