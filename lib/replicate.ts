@@ -111,6 +111,8 @@ export const trainModel = async (config: ModelConfig, trainDataUrl: string) => {
           class_prompt: `person`,
           instance_data: trainDataUrl,
           max_train_steps: maxTrainSteps,
+          train_text_encoder: true,
+          with_prior_preservation: true,
         },
         model: `${REPLICATE_USER}/${individualName}`,
         webhook_completed: TRAIN_WEBHOOK_URL,
@@ -150,7 +152,8 @@ export const prompt = async (
         input: {
           prompt,
           num_outputs: 4,
-          num_inference_steps: 50,
+          num_inference_steps: 60,
+          guidance_scale: 8,
           negative_prompt: negativePrompt,
         },
         version: modelVersion,
